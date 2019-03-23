@@ -1,43 +1,68 @@
-// package main
-//
-// import (
-// 	"strings"
-//
-// 	"golang.org/x/net/html"
-// 	"fmt"
-// )
-//
-// func main() {
-// 	// url := "https://www.juke-99.com/blog/engineer/okio-buffer.html"
-//
-// 	// res, err := http.Get(url)
-//
-// 	// if err != nil {
-// 	// 	panic(err)
-// 	// }
-//
-// 	// defer res.Body.Close()
-//
-// 	// byteArray, err := ioutil.ReadAll(res.Body)
-// 	// fmt.Println(string(byteArray))
-//
-// 	//s := string(byteArray)
-// 	s := `<aside class="category-box"><h3 class="category-header">カテゴリー</h3><ul><li><a>java</a></li><li><a>Okio v1</a></li><li><a>Buffer</a></li></ul></aside>`
-// 	// fmt.Print(n.Data)
-// 	z := html.NewTokenizer(strings.NewReader(s))
-//
-// 	for {
-// 		tt := z.Next()
-//
-// 		if tt == html.StartTagToken {
-// 			name, attr := z.TagName()
-// 			fmt.Println(string(name))
-// 			fmt.Println(attr)
-// 			fmt.Println(string(z.Text()))
-//
-// 			if tt == html.EndTagToken {
-// 				break
-// 			}
-// 		}
-// 	}
-// }
+package main
+
+import (
+  "github.com/gocolly/colly"
+
+	"encoding/json"
+	"io/ioutil"
+  "fmt"
+  "bytes"
+)
+
+type Index struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
+}
+
+func main() {
+  var d []string
+
+	c := colly.NewCollector()
+
+	// Find and visit all links
+	c.OnHTML("li a", func(e *colly.HTMLElement) {
+		fmt.Println(e.Text)
+	})
+
+	for _, index := range jsonRead("src/main/json/mysite-index.json") {
+		c.Visit(index.Url)
+    fmt.Println("---------")
+	}
+}
+
+func jsonRead(jsonUri string) ([]Index) {
+	byteArray, err := ioutil.ReadFile(jsonUri)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	var index []Index
+
+	if err := json.Unmarshal(byteArray, &index); err != nil {
+		fmt.Println(err)
+	}
+
+	return index
+}
+
+func createJson() {
+  // data := new(Data)
+
+  // data := map[string]interface{}{
+  //   "data": map[string]interface{}{
+  //     "url":
+  //   }
+  // }
+
+  jsonData, err := json.Marshal(data)
+
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+
+  output := new(bytes.Buffer)
+  json.Indent(output, jsonData, "", "  ")
+  fmt.Println(output.String())
+}
